@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cz.vutbr.web.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -158,26 +159,30 @@ public final class AnalyzerUtil {
     }
     
 	static List<Declaration> computeDeclarations(final Element e, final PseudoDeclaration pseudo, final OrderedRule[] clist, final ElementMatcher matcher, final MatchCondition matchCond) {
-		// resulting list of declaration for this element with no pseudo-selectors (main list)(local cache)
+        // resulting list of declaration for this element with no pseudo-selectors (main list)(local cache)
         final List<Declaration> eldecl = new ArrayList<Declaration>();
-        
+
         // for all candidates
         for (final OrderedRule orule : clist) {
-            
+
             final RuleSet rule = orule.getRule();
             final StyleSheet sheet = rule.getStyleSheet();
             final StyleSheet.Origin origin = (sheet == null) ? StyleSheet.Origin.AGENT : sheet.getOrigin();
-            
+
             // for all selectors inside
             for (final CombinedSelector s : rule.getSelectors()) {
-                
+
                 if (!AnalyzerUtil.matchSelector(s, e, matcher, matchCond)) {
-                    log.trace("CombinedSelector \"{}\" NOT matched!", s);
+                    if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                        log.trace("CombinedSelector \"{}\" NOT matched!", s);
+                    }
                     continue;
                 }
 
-                log.trace("CombinedSelector \"{}\" matched", s);
-                
+                if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                    log.trace("CombinedSelector \"{}\" matched", s);
+                }
+
                 final PseudoDeclaration psel = s.getPseudoElement();
                 final CombinedSelector.Specificity spec = s.computeSpecificity();
                 if (psel == pseudo)
@@ -191,11 +196,15 @@ public final class AnalyzerUtil {
 
         // sort declarations
         Collections.sort(eldecl); //sort the main list
-        log.debug("Sorted {} declarations.", eldecl.size());
-        log.trace("With values: {}", eldecl);
-        
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Sorted {} declarations.", eldecl.size());
+        }
+        if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+            log.trace("With values: {}", eldecl);
+        }
+
         return eldecl;
-	}
+    }
     
     public static boolean hasPseudoSelector(final OrderedRule[] rules, final Element e, final MatchCondition matchCond, PseudoDeclaration pd)
     {
@@ -310,8 +319,10 @@ public final class AnalyzerUtil {
         for (int i = sel.size() - 1; i >= 0; i--) {
             // last simple selector
             final Selector s = sel.get(i);
-            log.trace("Iterating loop with selector {}, combinator {}",
+            if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                log.trace("Iterating loop with selector {}, combinator {}",
                     s, combinator);
+            }
 
             // decide according to combinator anti-pattern
             if (combinator == null) {
@@ -324,7 +335,7 @@ public final class AnalyzerUtil {
                 retval = false;
                 if (adjacent != null && adjacent.getNodeType() == Node.ELEMENT_NODE)
                 {
-                    current = (Element) adjacent; 
+                    current = (Element) adjacent;
                     retval = elementSelectorMatches(s, current, matcher, matchCond);
                 }
             } else if (combinator == Selector.Combinator.PRECEDING) {
@@ -338,8 +349,7 @@ public final class AnalyzerUtil {
                         {
                             current = (Element) preceding;
                             retval = true;
-                        }
-                        else
+                        } else
                             preceding = preceding.getPreviousSibling();
                     }
                 } while (!retval && preceding != null);
@@ -354,8 +364,7 @@ public final class AnalyzerUtil {
                         {
                             current = (Element) ancestor;
                             retval = true;
-                        }
-                        else
+                        } else
                             ancestor = ancestor.getParentNode();
                     }
                 } while (!retval && ancestor != null);
@@ -492,11 +501,11 @@ public final class AnalyzerUtil {
 		}
 
 		// logging
-		if (log.isDebugEnabled()) {
+		if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
 			log.debug("For media \"{}\" we have {} rules", mediaspec, rules.contentCount());
-			if(log.isTraceEnabled()) {
-				log.trace("Detailed view: \n{}", rules);
-			}
+		}
+		if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+			log.trace("Detailed view: \n{}", rules);
 		}
 	}
 

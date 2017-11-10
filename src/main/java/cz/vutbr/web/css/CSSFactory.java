@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeFilter;
 
+import cz.vutbr.web.Config;
 import cz.vutbr.web.csskit.DeclarationTransformer;
 import cz.vutbr.web.csskit.DefaultNetworkProcessor;
 import cz.vutbr.web.csskit.MatchConditionImpl;
@@ -215,8 +216,10 @@ public final class CSSFactory {
 						.forName(DEFAULT_TERM_FACTORY);
 				Method m = clazz.getMethod("getInstance");
 				registerTermFactory((TermFactory) m.invoke(null));
-				log.debug("Retrived {} as default TermFactory implementation.",
-						DEFAULT_TERM_FACTORY);
+				if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Retrived {} as default TermFactory implementation.",
+                        DEFAULT_TERM_FACTORY);
+				}
 			} catch (Exception e) {
 				log.error("Unable to get TermFactory from default", e);
 				throw new RuntimeException(
@@ -249,9 +252,11 @@ public final class CSSFactory {
 						.forName(DEFAULT_SUPPORTED_CSS);
 				Method m = clazz.getMethod("getInstance");
 				registerSupportedCSS((SupportedCSS) m.invoke(null));
-				log.debug(
-						"Retrived {} as default SupportedCSS implementation.",
-						DEFAULT_SUPPORTED_CSS);
+				if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug(
+                        "Retrived {} as default SupportedCSS implementation.",
+                        DEFAULT_SUPPORTED_CSS);
+				}
 			} catch (Exception e) {
 				log.error("Unable to get SupportedCSS from default", e);
 				throw new RuntimeException(
@@ -284,8 +289,10 @@ public final class CSSFactory {
 						.forName(DEFAULT_RULE_FACTORY);
 				Method m = clazz.getMethod("getInstance");
 				registerRuleFactory((RuleFactory) m.invoke(null));
-				log.debug("Retrived {} as default RuleFactory implementation.",
-						DEFAULT_RULE_FACTORY);
+				if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Retrived {} as default RuleFactory implementation.",
+                        DEFAULT_RULE_FACTORY);
+				}
 			} catch (Exception e) {
 				log.error("Unable to get RuleFactory from default", e);
 				throw new RuntimeException(
@@ -314,14 +321,16 @@ public final class CSSFactory {
     public static final DeclarationTransformer getDeclarationTransformer() {
         if (dt == null) {
             try {
-                @SuppressWarnings("unchecked")
+				@SuppressWarnings("unchecked")
                 Class<? extends DeclarationTransformerImpl> clazz = (Class<? extends DeclarationTransformerImpl>) Class
                         .forName(DEFAULT_DECLARATION_TRANSFORMER);
-                Method m = clazz.getMethod("getInstance");
-                registerDeclarationTransformer((DeclarationTransformerImpl) m.invoke(null));
-                log.debug("Retrived {} as default DeclarationTransformer implementation.",
+				Method m = clazz.getMethod("getInstance");
+				registerDeclarationTransformer((DeclarationTransformerImpl) m.invoke(null));
+				if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Retrived {} as default DeclarationTransformer implementation.",
                         DEFAULT_DECLARATION_TRANSFORMER);
-            } catch (Exception e) {
+				}
+			} catch (Exception e) {
                 log.error("Unable to get DeclarationTransformer from default", e);
                 throw new RuntimeException(
                         "No DeclarationTransformer implementation registered!");
@@ -338,11 +347,13 @@ public final class CSSFactory {
     public static final ElementMatcher getElementMatcher() {
         if (matcher == null) {
             try {
-                @SuppressWarnings("unchecked")
+				@SuppressWarnings("unchecked")
                 Class<? extends ElementMatcher> clazz = (Class<? extends ElementMatcher>) Class.forName(DEFAULT_ELEMENT_MATCHER);
-                registerElementMatcher(clazz.newInstance());
-                log.debug("Retrived {} as default ElementMatcher implementation.", DEFAULT_ELEMENT_MATCHER);
-            } catch (Exception e) {
+				registerElementMatcher(clazz.newInstance());
+				if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+					log.debug("Retrived {} as default ElementMatcher implementation.", DEFAULT_ELEMENT_MATCHER);
+				}
+			} catch (Exception e) {
                 log.error("Unable to get ElementMatcher from default", e);
                 throw new RuntimeException(
                         "No ElementMatcher implementation registered!", e);
@@ -405,8 +416,10 @@ public final class CSSFactory {
 				Class<? extends NodeData> clazz = (Class<? extends NodeData>) Class
 						.forName(DEFAULT_NODE_DATA_IMPL);
 				registerNodeDataInstance(clazz);
-				log.debug("Registered {} as default NodeData instance.",
-						DEFAULT_NODE_DATA_IMPL);
+				if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Registered {} as default NodeData instance.",
+                        DEFAULT_NODE_DATA_IMPL);
+				}
 			} catch (Exception e) {
 			}
 		}
@@ -814,32 +827,40 @@ public final class CSSFactory {
 				// embedded style-sheet
 				if (isEmbeddedStyleSheet(elem, media)) {
 					result = pf.append(extractElementText(elem), network, null,
-							SourceType.EMBEDDED, result, base);
-					log.debug("Matched embedded CSS style");
+                        SourceType.EMBEDDED, result, base);
+					if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+						log.debug("Matched embedded CSS style");
+					}
 				}
 				// linked style-sheet
 				else if (isLinkedStyleSheet(elem, media)) {
 				    URL uri = DataURLHandler.createURL(base, matcher.getAttribute(elem, "href"));
 					result = pf.append(uri, network, encoding, SourceType.URL,
-							result, uri);
-					log.debug("Matched linked CSS style");
+						result, uri);
+					if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+						log.debug("Matched linked CSS style");
+					}
 				}
 				// in-line style and default style
 				else {
     				    if (elem.getAttribute("style") != null && elem.getAttribute("style").length() > 0) {
-        					result = pf.append(
-        							elem.getAttribute("style"), network,
+							result = pf.append(
+								elem.getAttribute("style"), network,
         							null, SourceType.INLINE,
-        							elem, true, result, base);
-        					log.debug("Matched inline CSS style");
-    				    }
+								elem, true, result, base);
+							if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+								log.debug("Matched inline CSS style");
+							}
+						}
                         if (elem.getAttribute("XDefaultStyle") != null && elem.getAttribute("XDefaultStyle").length() > 0) {
-                            result = pf.append(
-                                    elem.getAttribute("XDefaultStyle"), network,
+							result = pf.append(
+								elem.getAttribute("XDefaultStyle"), network,
                                     null, SourceType.INLINE,
-                                    elem, false, result, base);
-                            log.debug("Matched default CSS style");
-                        }
+								elem, false, result, base);
+							if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+								log.debug("Matched default CSS style");
+							}
+						}
 				}
 			} catch (CSSException ce) {
 				log.error("THROWN:", ce);

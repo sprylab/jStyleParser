@@ -1,5 +1,6 @@
 package cz.vutbr.web.csskit.antlr4;
 
+import cz.vutbr.web.Config;
 import cz.vutbr.web.css.*;
 import cz.vutbr.web.csskit.RuleArrayList;
 
@@ -43,17 +44,17 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
     private boolean preventImports = false;
 
     private void logEnter(String entry) {
-        if (log.isTraceEnabled())
+        if (Config.LOGGING_ENABLED && log.isTraceEnabled())
             log.trace("Enter: {}{}", generateSpaces(spacesCounter), entry);
     }
 
     private void logEnter(String entry, RuleContext ctx) {
-        if (log.isTraceEnabled())
+        if (Config.LOGGING_ENABLED && log.isTraceEnabled())
             log.trace("Enter: {}{}: >{}<", generateSpaces(spacesCounter), entry, ctx.getText());
     }
     
     private void logLeave(String leaving) {
-        if (log.isTraceEnabled())
+        if (Config.LOGGING_ENABLED && log.isTraceEnabled())
             log.trace("Leave: {}{}", generateSpaces(spacesCounter), leaving);
     }
 
@@ -222,7 +223,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 }
             }
         }
-        log.debug("\n***\n{}\n***\n", this.rules);
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("\n***\n{}\n***\n", this.rules);
+        }
         logLeave("inlinestyle");
         return this.rules;
     }
@@ -244,7 +247,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 this.rules.add(s);
             }
         }
-        log.debug("\n***\n{}\n***\n", this.rules);
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("\n***\n{}\n***\n", this.rules);
+        }
         logLeave("stylesheet");
         return this.rules;
     }
@@ -325,11 +330,15 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             ctx.import_uri();
             String iuri = visitImport_uri(ctx.import_uri());
             if (!this.preventImports && iuri != null) {
-                log.debug("Adding import: {}", iuri);
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Adding import: {}", iuri);
+                }
                 importMedia.add(im);
                 importPaths.add(iuri);
             } else {
-                log.debug("Ignoring import: {}", iuri);
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Ignoring import: {}", iuri);
+                }
             }
         }
         //page
@@ -376,7 +385,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
         }
         //unknown
         else {
-            log.debug("Skipping invalid at statement");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Skipping invalid at statement");
+            }
         }
         logLeave("atstatement");
         return atstmt;
@@ -417,7 +428,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             for (CSSParser.Margin_ruleContext mctx : ctx.margin_rule()) {
                 RuleMargin m = visitMargin_rule(mctx);
                 margins.add(m);
-                log.debug("Inserted margin rule #{} into @page", margins.size() + 1);
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Inserted margin rule #{} into @page", margins.size() + 1);
+                }
             }
         }
 
@@ -485,7 +498,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
         for (CSSParser.Media_queryContext mqc : ctx.media_query()) {
             queries.add(visitMedia_query(mqc));
         }
-        log.debug("Totally returned {} media queries.", queries.size());
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Totally returned {} media queries.", queries.size());
+        }
         logLeave("media");
         return queries;
     }
@@ -514,7 +529,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             visitMedia_term(mtc);
         }
         if (mq.invalid) {
-            log.trace("Skipping invalid rule {}", mq.q);
+            if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                log.trace("Skipping invalid rule {}", mq.q);
+            }
             mq.q.setType("all"); //change the malformed media queries to "not all"
             mq.q.setNegative(true);
         }
@@ -547,7 +564,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 mq.q.setType(m);
                 mq.state = MediaQueryState.AND;
             } else {
-                log.trace("Invalid media query: found ident: {} state: {}", m, state);
+                if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                    log.trace("Invalid media query: found ident: {} state: {}", m, state);
+                }
                 mq.invalid = true;
             }
         }
@@ -562,11 +581,15 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                     mq.q.add(e);
                     mq.state = MediaQueryState.AND;
                 } else {
-                    log.trace("Invalidating media query for invalud expression");
+                    if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                        log.trace("Invalidating media query for invalud expression");
+                    }
                     mq.invalid = true;
                 }
             } else {
-                log.trace("Invalid media query: found expr, state: {}", mq.state);
+                if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                    log.trace("Invalid media query: found expr, state: {}", mq.state);
+                }
                 mq.invalid = true;
             }
         }
@@ -626,7 +649,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
         if (ctx.ruleset() != null) {
             rules = visitRuleset(ctx.ruleset());
         } else {
-            log.debug("Skiping invalid statement in media");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Skiping invalid statement in media");
+            }
         }
         logLeave("media_rule");
         //could be null
@@ -653,7 +678,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
     public RuleBlock<?> visitRuleset(CSSParser.RulesetContext ctx) {
         logEnter("ruleset");
         if (ctxHasErrorNode(ctx) || ctx.norule() != null) {
-            log.trace("Leaving ruleset with error {} {}", ctxHasErrorNode(ctx), (ctx.norule() != null)); 
+            if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                log.trace("Leaving ruleset with error {} {}", ctxHasErrorNode(ctx), (ctx.norule() != null));
+            }
             return null;
         }
         List<CombinedSelector> cslist = new ArrayList<>();
@@ -662,14 +689,18 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             CombinedSelector cs = visitCombined_selector(csctx);
             if (cs != null && !cs.isEmpty() && !statement_stack.peek().invalid) {
                 cslist.add(cs);
-                log.debug("Inserted combined selector ({}) into ruleset", cslist.size());
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Inserted combined selector ({}) into ruleset", cslist.size());
+                }
             }
         }
         List<cz.vutbr.web.css.Declaration> decl = visitDeclarations(ctx.declarations());
         RuleBlock<?> stmnt;
         if (statement_stack.peek().invalid) {
             stmnt = null;
-            log.debug("Ruleset not valid, so not created");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Ruleset not valid, so not created");
+            }
         } else {
             stmnt = preparator.prepareRuleSet(cslist, decl, (this.wrapMedia != null && !this.wrapMedia.isEmpty()), this.wrapMedia);
             this.preventImports = true;
@@ -691,9 +722,13 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 Declaration d = visitDeclaration(declctx);
                 if (d != null) {
                     decl.add(d);
-                    log.debug("Inserted declaration #{} ", decl.size() + 1);
+                    if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                        log.debug("Inserted declaration #{} ", decl.size() + 1);
+                    }
                 } else {
-                    log.debug("Null declaration was omitted");
+                    if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                        log.debug("Null declaration was omitted");
+                    }
                 }
             }
         }
@@ -731,15 +766,21 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 decl.replaceAll(t);
             }
         } else {
-            log.debug("invalidating declaration");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("invalidating declaration");
+            }
             declaration_stack.peek().invalid = true;
         }
 
         if (declaration_stack.peek().invalid || declaration_stack.isEmpty()) {
             decl = null;
-            log.debug("Declaration was invalidated or already invalid");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Declaration was invalidated or already invalid");
+            }
         } else {
-            log.debug("Returning declaration: {}.", decl);
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Returning declaration: {}.", decl);
+            }
         }
         logLeave("declaration");
         declaration_stack.pop();
@@ -757,7 +798,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             declaration_stack.peek().invalid = true;
         } else {
             declaration_stack.peek().d.setImportant(true);
-            log.debug("IMPORTANT");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("IMPORTANT");
+            }
         }
         //returns null
         return null;
@@ -782,7 +825,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
         Token token = ctx.IDENT().getSymbol();
         declaration_stack.peek().d.setSource(extractSource((CSSToken) token));
 
-        log.debug("Setting property: {}", declaration_stack.peek().d.getProperty());
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Setting property: {}", declaration_stack.peek().d.getProperty());
+        }
         logLeave("property");
         //returns null
         return null;
@@ -834,7 +879,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 }
             }
         }
-        log.debug("Totally added {} terms", tlist.size());
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Totally added {} terms", tlist.size());
+        }
         logLeave("terms");
         terms_stack.pop();
         return tlist;
@@ -929,49 +976,71 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             terms_stack.peek().dash = true;
         }
         if (ctx.COMMA() != null) {
-            log.debug("VP - comma");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - comma");
+            }
             terms_stack.peek().op = Term.Operator.COMMA;
         } else if (ctx.SLASH() != null) {
             terms_stack.peek().op = Term.Operator.SLASH;
         } else if (ctx.string() != null) {
             //string
-            log.debug("VP - string");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - string");
+            }
             terms_stack.peek().term = tf.createString(extractTextUnescaped(ctx.string().getText()));
         } else if (ctx.IDENT() != null) {
-            log.debug("VP - ident");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - ident");
+            }
             terms_stack.peek().term = tf.createIdent(extractTextUnescaped(ctx.IDENT().getText()), terms_stack.peek().dash);
         } else if (ctx.HASH() != null) {
-            log.debug("VP - hash");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - hash");
+            }
             terms_stack.peek().term = tf.createColor(ctx.HASH().getText());
             if (terms_stack.peek().term == null) {
                 declaration_stack.peek().invalid = true;
             }
         } else if (ctx.PERCENTAGE() != null) {
-            log.debug("VP - percentage");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - percentage");
+            }
             terms_stack.peek().term = tf.createPercent(ctx.PERCENTAGE().getText(), terms_stack.peek().unary);
         } else if (ctx.DIMENSION() != null) {
-            log.debug("VP - dimension");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - dimension");
+            }
             String dim = ctx.DIMENSION().getText();
             terms_stack.peek().term = tf.createDimension(dim, terms_stack.peek().unary);
             if (terms_stack.peek().term == null) {
-                log.info("Unable to create dimension from {}, unary {}", dim, terms_stack.peek().unary);
+                if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+                    log.info("Unable to create dimension from {}, unary {}", dim, terms_stack.peek().unary);
+                }
                 declaration_stack.peek().invalid = true;
             }
         } else if (ctx.NUMBER() != null) {
-            log.debug("VP - number");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - number");
+            }
             terms_stack.peek().term = tf.createNumeric(ctx.NUMBER().getText(), terms_stack.peek().unary);
         } else if (ctx.UNIRANGE() != null) {
-            log.debug("VP - unirange");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - unirange");
+            }
             terms_stack.peek().term = tf.createUnicodeRange(ctx.UNIRANGE().getText());
         } else if (ctx.URI() != null) {
-            log.debug("VP - uri");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - uri");
+            }
             terms_stack.peek().term = tf.createURI(extractTextUnescaped(ctx.URI().getText()), extractBase(ctx.URI()));
         } else if (ctx.UNCLOSED_URI() != null && ((CSSToken) ctx.UNCLOSED_URI().getSymbol()).isValid()) {
-            log.debug("VP - unclosed_uri");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - unclosed_uri");
+            }
             terms_stack.peek().term = tf.createURI(extractTextUnescaped(ctx.UNCLOSED_URI().getText()), extractBase(ctx.UNCLOSED_URI()));
         } else if (ctx.funct() != null) {
             terms_stack.peek().term = null;
-            visitFunct(ctx.funct());
+             visitFunct(ctx.funct());
             //served in function
             log.debug("function is server later");
         } else {
@@ -1013,15 +1082,13 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
     protected Stack<funct_args_scope> funct_args_stack = new Stack<>();
 
     @Override
-    public List<Term<?>> visitFunct_args(CSSParser.Funct_argsContext ctx)
-    {
+    public List<Term<?>> visitFunct_args(CSSParser.Funct_argsContext ctx) {
         funct_args_stack.push(new funct_args_scope());
         List<cz.vutbr.web.css.Term<?>> tlist;
         funct_args_stack.peek().term = null;
         logEnter("funct_args");
         funct_args_stack.peek().list = tlist = new ArrayList<>();
-        if (ctx.funct_argument() != null)
-        {
+        if (ctx.funct_argument() != null) {
             for (CSSParser.Funct_argumentContext argCtx : ctx.funct_argument()) {
                 visitFunct_argument(argCtx);
                 // set operator, store and create next
@@ -1031,7 +1098,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
                 }
             }
         }
-        log.debug("Totally added {} args", tlist.size());
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Totally added {} args", tlist.size());
+        }
         logLeave("funct_args");
         funct_args_stack.pop();
         return tlist;
@@ -1048,51 +1117,79 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             return null;
         }
         if (ctx.PLUS() != null) {
-            log.debug("VP - plus");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - plus");
+            }
             funct_args_stack.peek().term = tf.createOperator('+');
         } else if (ctx.MINUS() != null) {
-            log.debug("VP - minus");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - minus");
+            }
             funct_args_stack.peek().term = tf.createOperator('-');
         } else if (ctx.ASTERISK() != null) {
-            log.debug("VP - *");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - *");
+            }
             funct_args_stack.peek().term = tf.createOperator('*');
         } else if (ctx.SLASH() != null) {
-            log.debug("VP - /");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - /");
+            }
             funct_args_stack.peek().term = tf.createOperator('/');
         } else if (ctx.LPAREN() != null) {
-            log.debug("VP - (");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - (");
+            }
             funct_args_stack.peek().term = tf.createOperator('(');
         } else if (ctx.RPAREN() != null) {
-            log.debug("VP - )");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - )");
+            }
             funct_args_stack.peek().term = tf.createOperator(')');
         } else if (ctx.COMMA() != null) {
-            log.debug("VP - comma");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - comma");
+            }
             funct_args_stack.peek().term = tf.createOperator(',');
         } else if (ctx.string() != null) {
-            log.debug("VP - string");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - string");
+            }
             funct_args_stack.peek().term = tf.createString(extractTextUnescaped(ctx.string().getText()));
         } else if (ctx.IDENT() != null) {
-            log.debug("VP - ident");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - ident");
+            }
             funct_args_stack.peek().term = tf.createIdent(extractTextUnescaped(ctx.IDENT().getText()));
         } else if (ctx.PERCENTAGE() != null) {
-            log.debug("VP - percentage");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - percentage");
+            }
             funct_args_stack.peek().term = tf.createPercent(ctx.PERCENTAGE().getText(), 1);
         } else if (ctx.DIMENSION() != null) {
-            log.debug("VP - dimension");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - dimension");
+            }
             String dim = ctx.DIMENSION().getText();
             funct_args_stack.peek().term = tf.createDimension(dim, 1);
             if (funct_args_stack.peek().term == null) {
-                log.info("Unable to create dimension from {}, unary {}", dim, 1);
+                if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+                    log.info("Unable to create dimension from {}, unary {}", dim, 1);
+                }
                 declaration_stack.peek().invalid = true;
             }
         } else if (ctx.HASH() != null) {
-            log.debug("VP - hash");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - hash");
+            }
             terms_stack.peek().term = tf.createColor(ctx.HASH().getText());
             if (terms_stack.peek().term == null) {
                 declaration_stack.peek().invalid = true;
             }
         } else if (ctx.NUMBER() != null) {
-            log.debug("VP - number");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("VP - number");
+            }
             funct_args_stack.peek().term = tf.createNumeric(ctx.NUMBER().getText(), 1);
         } else if (ctx.funct() != null) {
             funct_args_stack.peek().term = null;
@@ -1154,12 +1251,16 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
             if (statement_stack.peek().invalid) {
                 log.debug("Ommiting combined selector, whole statement discarded");
             } else {
-                log.debug("Combined selector is invalid");
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Combined selector is invalid");
+                }
             }
             // mark whole ruleset as invalid
             statement_stack.peek().invalid = true;
         } else {
-            log.debug("Returing combined selector: {}.", combinedSelector);
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Returing combined selector: {}.", combinedSelector);
+            }
         }
         combined_selector_stack.pop();
         logLeave("combined_selector");
@@ -1334,7 +1435,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
         if (attributeName != null) {
             elemAttr = rf.createAttribute(value, isStringValue, op, attributeName);
         } else {
-            log.debug("Invalid attribute element in selector");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Invalid attribute element in selector");
+            }
             combined_selector_stack.peek().invalid = true;
         }
         logLeave("attribute");
@@ -1443,7 +1546,9 @@ public class CSSParserVisitorImpl implements CSSParserVisitor<Object>, CSSParser
     @Override
     public Object visit(ParseTree parseTree) {
         logEnter("visit");
-        log.debug(parseTree.getText());
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug(parseTree.getText());
+        }
 //        Object o  = visitChildren(parseTree.chi);
         logLeave("visit");
         return null;

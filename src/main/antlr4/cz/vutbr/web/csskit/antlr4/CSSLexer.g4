@@ -127,7 +127,9 @@ tokens {
        else if (token.getType() == Token.EOF) {
            if (lastUnclosed != null) {
                lastUnclosed.setValid(true);
-               log.debug("Validating UNCLOSED_URI by EOF");
+               if (cz.vutbr.web.Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                   log.debug("Validating UNCLOSED_URI by EOF");
+               }
            }
        }
        //reset unclosed uri
@@ -156,7 +158,9 @@ tokens {
      */
     @Override
     public void recover(RecognitionException re) {
-        log.debug("recover" + re.toString());
+        if (cz.vutbr.web.Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("recover" + re.toString());
+        }
         if (!tr.recover())
             super.recover(re);
     }

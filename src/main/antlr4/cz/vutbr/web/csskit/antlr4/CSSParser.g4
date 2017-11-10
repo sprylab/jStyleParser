@@ -208,7 +208,9 @@ ruleset
 	  	declarations
 	  RCURLY
 	| norule {
-	    log.debug("PARSING ruleset: norule encountered | consume until RCURLY and add INVALID_STATEMENT");
+	    if (cz.vutbr.web.Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+	        log.debug("PARSING ruleset: norule encountered | consume until RCURLY and add INVALID_STATEMENT");
+	    }
         IntervalSet intervalSet = new IntervalSet(RCURLY);
         //we don't require {} to be balanced here because of possible parent 'media' sections that may remain open => RecoveryMode.RULE
         getCSSErrorHandler().consumeUntilGreedy(this, intervalSet/*, CSSLexerState.RecoveryMode.RULE*/);
@@ -216,7 +218,9 @@ ruleset
 	}
 	;
     catch [RecognitionException re] {
-	    log.debug("PARSING ruleset ERROR | consume until RCURLY and add INVALID_STATEMENT");
+        if (cz.vutbr.web.Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+	        log.debug("PARSING ruleset ERROR | consume until RCURLY and add INVALID_STATEMENT");
+        }
         IntervalSet intervalSet = new IntervalSet(RCURLY);
         //we don't require {} to be balanced here because of possible parent 'media' sections that may remain open => RecoveryMode.RULE
         getCSSErrorHandler().consumeUntilGreedy(this, intervalSet/*, CSSLexerState.RecoveryMode.RULE*/);
@@ -234,7 +238,9 @@ declarations
 declaration
     @init {
       CSSLexerState begin = getCurrentLexerState(_localctx.getStart());
-      log.debug("Decl begin: " + begin);
+      if (cz.vutbr.web.Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+        log.debug("Decl begin: " + begin);
+      }
     }
 	: property COLON S* terms? important?
 	| noprop any* // invalid declaration /* if first character in the declaration is invalid (various dirty hacks) */

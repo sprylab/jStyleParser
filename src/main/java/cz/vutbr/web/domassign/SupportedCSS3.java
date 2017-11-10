@@ -10,6 +10,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.vutbr.web.Config;
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.SupportedCSS;
@@ -130,10 +131,12 @@ public class SupportedCSS3 implements SupportedCSS {
 	}
 
 	public final CSSProperty getDefaultProperty(String property) {
-		CSSProperty value = defaultCSSproperties.get(property);
-		log.debug("Asked for property {}'s default value: {}", property, value);
-		return value;
-	}
+        CSSProperty value = defaultCSSproperties.get(property);
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Asked for property {}'s default value: {}", property, value);
+        }
+        return value;
+    }
 
 	public final Term<?> getDefaultValue(String property) {
 		return defaultCSSvalues.get(property);

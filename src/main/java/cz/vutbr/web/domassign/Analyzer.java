@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.vutbr.web.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -244,10 +245,10 @@ public class Analyzer {
 			DeclarationMap declarations, TreeWalker walker,
 			Element e, Holder holder) {
 
-		if(log.isDebugEnabled()) {
+		if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
 			log.debug("Traversal of {} {}.", e.getNodeName(), e.getNodeValue());
 		}
-		
+
 		// create set of possible candidates applicable to given element
 		// set is automatically filtered to not contain duplicates
 		Set<OrderedRule> candidates = new HashSet<OrderedRule>();
@@ -259,7 +260,9 @@ public class Analyzer {
 			if (rules != null)
 				candidates.addAll(rules);
 		}
-		log.trace("After CLASSes {} total candidates.", candidates.size());
+		if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+			log.trace("After CLASSes {} total candidates.", candidates.size());
+		}
 
 		// match IDs
 		String id = matcher.elementID(e);
@@ -268,8 +271,10 @@ public class Analyzer {
 			if (rules != null)
 				candidates.addAll(rules);
 		}
-		log.trace("After IDs {} total candidates.", candidates.size());
-		
+		if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+			log.trace("After IDs {} total candidates.", candidates.size());
+		}
+
 		// match elements
 		String name = matcher.elementName(e);
 		if (name != null) {
@@ -277,71 +282,81 @@ public class Analyzer {
 			if (rules != null)
 				candidates.addAll(rules);
 		}
-		log.trace("After ELEMENTs {} total candidates.", candidates.size());
+		if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+			log.trace("After ELEMENTs {} total candidates.", candidates.size());
+		}
 
 		// others
 		candidates.addAll(holder.get(HolderItem.OTHER, null));
-		
-	    // transform to list to speed up traversal
+
+		// transform to list to speed up traversal
 		// and sort rules in order as they were found in CSS definition
 		List<OrderedRule> clist = new ArrayList<OrderedRule>(candidates);
 		Collections.sort(clist);
-		
-		log.debug("Totally {} candidates.", candidates.size());
-		log.trace("With values: {}", clist);
+
+		if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+			log.debug("Totally {} candidates.", candidates.size());
+		}
+		if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+			log.trace("With values: {}", clist);
+		}
 
 		// resulting list of declaration for this element with no pseudo-selectors (main list)(local cache)
 		List<Declaration> eldecl = new ArrayList<Declaration>();
-		
+
 		// existing pseudo selectors found
 		Set<PseudoDeclaration> pseudos = new HashSet<PseudoDeclaration>();
 
 		// for all candidates
 		for (OrderedRule orule : clist) {
-		    
+
 			final RuleSet rule = orule.getRule();
 			StyleSheet sheet = rule.getStyleSheet();
 			if (sheet == null)
-			    log.warn("No source style sheet set for rule: {}", rule.toString());
+				log.warn("No source style sheet set for rule: {}", rule.toString());
 			StyleSheet.Origin origin = (sheet == null) ? StyleSheet.Origin.AGENT : sheet.getOrigin();
-			
+
 			// for all selectors inside
 			for (CombinedSelector s : rule.getSelectors()) {
 				// this method does automatic rewind of walker
 				if (!matchSelector(s, e, walker)) {
-					log.trace("CombinedSelector \"{}\" NOT matched!", s);
+					if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+						log.trace("CombinedSelector \"{}\" NOT matched!", s);
+					}
 					continue;
 				}
 
-				log.trace("CombinedSelector \"{}\" matched", s);
-				
+				if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+					log.trace("CombinedSelector \"{}\" matched", s);
+				}
+
 				PseudoDeclaration pseudo = s.getPseudoElement();
                 CombinedSelector.Specificity spec = s.computeSpecificity();
-				if (pseudo == null)
-				{
-    				// add to main list
-    				for (Declaration d : rule)
-    					eldecl.add(new AssignedDeclaration(d, spec, origin));
-				}
-				else
-				{
-				    // remember the pseudo element
-				    pseudos.add(pseudo);
-				    // add to pseudo lists
-                    for (Declaration d : rule)
-                        declarations.addDeclaration(e, pseudo, new AssignedDeclaration(d, spec, origin));
+				if (pseudo == null) {
+					// add to main list
+					for (Declaration d : rule)
+						eldecl.add(new AssignedDeclaration(d, spec, origin));
+				} else {
+					// remember the pseudo element
+					pseudos.add(pseudo);
+					// add to pseudo lists
+					for (Declaration d : rule)
+						declarations.addDeclaration(e, pseudo, new AssignedDeclaration(d, spec, origin));
 				}
 
 			}
 		}
 
 		// sort declarations
-		Collections.sort(eldecl); //sort the main list
-		log.debug("Sorted {} declarations.", eldecl.size());
-		log.trace("With values: {}", eldecl);
+        Collections.sort(eldecl); //sort the main list
+		if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+			log.debug("Sorted {} declarations.", eldecl.size());
+		}
+		if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+			log.trace("With values: {}", eldecl);
+		}
 		for (PseudoDeclaration p : pseudos)
-		    declarations.sortDeclarations(e, p); //sort pseudos
-		
+			declarations.sortDeclarations(e, p); //sort pseudos
 		// set the main list
 		declarations.put(e, null, eldecl);
 	}

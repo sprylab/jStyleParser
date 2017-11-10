@@ -15,6 +15,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.vutbr.web.Config;
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
@@ -230,17 +231,20 @@ public class DeclarationTransformerImpl implements DeclarationTransformer {
 		try {
 			Method m = methods.get(propertyName);
 			if (m != null) {
-				boolean result = (Boolean) m
-						.invoke(this, d, properties, values);
-				log.debug("Parsing /{}/ {}", result, d);
-				return result;
-			}
-			else
-			{
-			    boolean result = processAdditionalCSSGenericProperty(d, properties, values);
-			    log.debug("Parsing with proxy /{}/ {}", result, d);
-			    return result; 
-			}			
+                boolean result = (Boolean) m
+                    .invoke(this, d, properties, values);
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Parsing /{}/ {}", result, d);
+                }
+                return result;
+            }
+			else {
+                boolean result = processAdditionalCSSGenericProperty(d, properties, values);
+                if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                    log.debug("Parsing with proxy /{}/ {}", result, d);
+                }
+                return result;
+            }
 		} catch (IllegalArgumentException e) {
 			log.warn("Illegal argument", e);
 		} catch (IllegalAccessException e) {
@@ -263,19 +267,21 @@ public class DeclarationTransformerImpl implements DeclarationTransformer {
 	protected Map<String, Method> parsingMethods() {
 
 		Map<String, Method> map = new HashMap<String, Method>(css
-				.getTotalProperties(), 1.0f);
+			.getTotalProperties(), 1.0f);
 
 		for (String key : css.getDefinedPropertyNames()) {
 			try {
 				Method m = DeclarationTransformerImpl.class.getDeclaredMethod(
 						DeclarationTransformerImpl.camelCase("process-" + key),
-						Declaration.class, Map.class, Map.class);
+					Declaration.class, Map.class, Map.class);
 				map.put(key, m);
 			} catch (Exception e) {
 				log.warn("Unable to find method for property {}.", key);
 			}
 		}
-		log.info("Totally found {} parsing methods", map.size());
+		if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+			log.info("Totally found {} parsing methods", map.size());
+		}
 		return map;
 	}
 

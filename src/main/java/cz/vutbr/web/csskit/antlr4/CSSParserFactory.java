@@ -1,5 +1,6 @@
 package cz.vutbr.web.csskit.antlr4;
 
+import cz.vutbr.web.Config;
 import cz.vutbr.web.css.*;
 import org.antlr.v4.runtime.*;
 import org.fit.net.DataURLHandler;
@@ -159,8 +160,9 @@ public class CSSParserFactory {
                 } catch (IOException e) {
                     log.warn("Couldn't read imported style sheet: {}", e.getMessage());
                 }
-            } else
+            } else if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
                 log.trace("Skipping import {} (media not matching)", path);
+            }
         }
 
         return addRulesToStyleSheet(extractor.getRules(), sheet);

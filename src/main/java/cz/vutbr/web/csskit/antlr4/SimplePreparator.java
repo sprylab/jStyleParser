@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import cz.vutbr.web.Config;
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.CombinedSelector;
 import cz.vutbr.web.css.Declaration;
@@ -39,64 +40,76 @@ public class SimplePreparator implements Preparator {
 	public RuleBlock<?> prepareRuleSet(List<CombinedSelector> cslist,
 			List<Declaration> dlist, boolean wrap, List<MediaQuery> media) {
 
-		// check emptiness
-		if ((cslist == null || cslist.isEmpty())
-				|| (dlist == null || dlist.isEmpty())) {
-			log.debug("Empty RuleSet was ommited");
-			return null;
-		}
+        // check emptiness
+        if ((cslist == null || cslist.isEmpty())
+            || (dlist == null || dlist.isEmpty())) {
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty RuleSet was ommited");
+            }
+            return null;
+        }
 
-		// create rule set
-		RuleSet rs = rf.createSet();
-		rs.setSelectors(cslist);
-		rs.replaceAll(dlist);
-		log.info("Created RuleSet as with:\n{}", rs);
+        // create rule set
+        RuleSet rs = rf.createSet();
+        rs.setSelectors(cslist);
+        rs.replaceAll(dlist);
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Created RuleSet as with:\n{}", rs);
+        }
 
-		// wrap
-		if (wrap) {
-			// swap numbers, so RuleMedia is created before RuleSet
-			RuleMedia rm = rf.createMedia();
-			log.debug("Wrapping RuleSet {} into RuleMedia: {}", rs, media);
+        // wrap
+        if (wrap) {
+            // swap numbers, so RuleMedia is created before RuleSet
+            RuleMedia rm = rf.createMedia();
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Wrapping RuleSet {} into RuleMedia: {}", rs, media);
+            }
 
-			rm.unlock();
-			rm.add(rs);
-			rm.setMediaQueries(media);
+            rm.unlock();
+            rm.add(rs);
+            rm.setMediaQueries(media);
 
-			// return wrapped block
-			return (RuleBlock<?>) rm;
-		}
+            // return wrapped block
+            return (RuleBlock<?>) rm;
+        }
 
-		// return classic rule set
-		return (RuleBlock<?>) rs;
-	}
+        // return classic rule set
+        return (RuleBlock<?>) rs;
+    }
 
 	public RuleBlock<?> prepareRuleMedia(List<RuleSet> rules, List<MediaQuery> media) {
 
-		if (rules == null || rules.isEmpty()) {
-			log.debug("Empty RuleMedia was ommited");
-			return null;
-		}
+        if (rules == null || rules.isEmpty()) {
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty RuleMedia was ommited");
+            }
+            return null;
+        }
 
-		// create media at position of mark
-		RuleMedia rm = rf.createMedia();
-		rm.replaceAll(rules);
-		if (media != null && !media.isEmpty())
-			rm.setMediaQueries(media);
+        // create media at position of mark
+        RuleMedia rm = rf.createMedia();
+        rm.replaceAll(rules);
+        if (media != null && !media.isEmpty())
+            rm.setMediaQueries(media);
 
-		log.info("Create @media as with:\n{}", rm);
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Create @media as with:\n{}", rm);
+        }
 
-		return (RuleBlock<?>) rm;
-	}
+        return (RuleBlock<?>) rm;
+    }
 
 	public RuleBlock<?> prepareRulePage(List<Declaration> declarations, List<RuleMargin> marginRules, String name, String pseudo) {
 
-	    if ((declarations == null || declarations.isEmpty()) &&
-	         (marginRules == null || marginRules.isEmpty())) {
-			log.debug("Empty RulePage was ommited");
-			return null;
-		}
+        if ((declarations == null || declarations.isEmpty()) &&
+            (marginRules == null || marginRules.isEmpty())) {
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty RulePage was ommited");
+            }
+            return null;
+        }
 
-		RulePage rp = rf.createPage();
+        RulePage rp = rf.createPage();
         if (declarations != null)
             for (Declaration d : declarations)
                 rp.add(d);
@@ -104,25 +117,31 @@ public class SimplePreparator implements Preparator {
             for (RuleMargin m : marginRules)
                 rp.add(m);
         rp.setName(name);
-		
-		rp.setPseudo(pseudo);
-		log.info("Create @page as with:\n{}", rp);
 
-		return (RuleBlock<?>) rp;
-	}
+        rp.setPseudo(pseudo);
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Create @page as with:\n{}", rp);
+        }
+
+        return (RuleBlock<?>) rp;
+    }
 
     public RuleMargin prepareRuleMargin(String area, List<Declaration> decl) {
 
         if ((decl == null || decl.isEmpty()))
         {
-            log.debug("Empty RuleMargin was ommited");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty RuleMargin was ommited");
+            }
             return null;
         }
 
         RuleMargin rm = rf.createMargin(area);
         rm.replaceAll(decl);
 
-        log.info("Create @" + area + " with:\n" + rm);
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Create @" + area + " with:\n" + rm);
+        }
 
         return rm;
     }
@@ -130,13 +149,17 @@ public class SimplePreparator implements Preparator {
     public RuleBlock<?> prepareRuleViewport(List<Declaration> decl) {
 
         if (decl == null || decl.isEmpty()) {
-            log.debug("Empty Viewport was ommited");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty Viewport was ommited");
+            }
             return null;
         }
 
         RuleViewport rp = rf.createViewport();
         rp.replaceAll(decl);
-        log.info("Create @viewport as {}th with:\n{}", rp);
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Create @viewport as {}th with:\n{}", rp);
+        }
 
         return (RuleBlock<?>) rp;
     }
@@ -144,13 +167,17 @@ public class SimplePreparator implements Preparator {
     public RuleBlock<?> prepareRuleFontFace(List<Declaration> decl) {
 
         if (decl == null || decl.isEmpty()) {
-            log.debug("Empty RuleFontFace was ommited");
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty RuleFontFace was ommited");
+            }
             return null;
         }
 
         RuleFontFace rp = rf.createFontFace();
         rp.replaceAll(decl);
-        log.info("Create @font-face as with:\n{}", rp);
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Create @font-face as with:\n{}", rp);
+        }
 
         return (RuleBlock<?>) rp;
     }
@@ -158,26 +185,30 @@ public class SimplePreparator implements Preparator {
 	public RuleBlock<?> prepareInlineRuleSet(List<Declaration> dlist,
 			List<PseudoPage> pseudos) {
 
-		if(dlist==null || dlist.isEmpty()) {
-			log.debug("Empty RuleSet (inline) was ommited");
-			return null;
-		}
-		
-		// create selector with element
-		CombinedSelector cs = (CombinedSelector) rf.createCombinedSelector()
-				.unlock();
-		Selector sel = (Selector) rf.createSelector().unlock();
-		sel.add(rf.createElementDOM(elem, inlinePriority));
-		if(pseudos!=null) sel.addAll(pseudos);
-		cs.add(sel);
-		
-		RuleSet rs = rf.createSet();
-		rs.replaceAll(dlist);
+        if (dlist == null || dlist.isEmpty()) {
+            if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+                log.debug("Empty RuleSet (inline) was ommited");
+            }
+            return null;
+        }
+
+        // create selector with element
+        CombinedSelector cs = (CombinedSelector) rf.createCombinedSelector()
+            .unlock();
+        Selector sel = (Selector) rf.createSelector().unlock();
+        sel.add(rf.createElementDOM(elem, inlinePriority));
+        if (pseudos != null) sel.addAll(pseudos);
+        cs.add(sel);
+
+        RuleSet rs = rf.createSet();
+        rs.replaceAll(dlist);
 		rs.setSelectors(Arrays.asList(cs));
-		
-		log.info("Create @media as with:\n{}", rs);
-		
-		return (RuleBlock<?>) rs;
-	}
+
+        if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+            log.info("Create @media as with:\n{}", rs);
+        }
+
+        return (RuleBlock<?>) rs;
+    }
 
 }

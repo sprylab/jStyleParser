@@ -2,6 +2,7 @@ package cz.vutbr.web.csskit.antlr4;
 
 import java.util.Stack;
 
+import cz.vutbr.web.Config;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.atn.LexerATNSimulator;
@@ -126,41 +127,40 @@ public class CSSTokenRecovery {
             try {
                 Token ttype1;
                 label110:
-                while(!lexer._hitEOF) {
+                while (!lexer._hitEOF) {
                     lexer._token = null;
                     lexer._channel = Token.DEFAULT_CHANNEL;
                     lexer._tokenStartCharIndex = lexer._input.index();
-                    lexer._tokenStartCharPositionInLine = ((LexerATNSimulator)lexer.getInterpreter()).getCharPositionInLine();
-                    lexer._tokenStartLine = ((LexerATNSimulator)lexer.getInterpreter()).getLine();
+                    lexer._tokenStartCharPositionInLine = ((LexerATNSimulator) lexer.getInterpreter()).getCharPositionInLine();
+                    lexer._tokenStartLine = ((LexerATNSimulator) lexer.getInterpreter()).getLine();
                     lexer._text = null;
-
 
                     do {
                         lexer._type = 0;
 
                         int ttype;
                         try {
-                            ttype = ((LexerATNSimulator)lexer.getInterpreter()).match(lexer._input, lexer._mode);
+                            ttype = ((LexerATNSimulator) lexer.getInterpreter()).match(lexer._input, lexer._mode);
                         } catch (LexerNoViableAltException var7) {
                             lexer.notifyListeners(var7);
                             lexer.recover(var7);
                             ttype = -3;
                         }
 
-                        if(lexer._input.LA(1) == -1) {
+                        if (lexer._input.LA(1) == -1) {
                             lexer._hitEOF = true;
                         }
 
-                        if(lexer._type == 0) {
+                        if (lexer._type == 0) {
                             lexer._type = ttype;
                         }
 
-                        if(lexer._type == -3) {
+                        if (lexer._type == -3) {
                             continue label110;
                         }
-                    } while(lexer._type == -2);
+                    } while (lexer._type == -2);
 
-                    if(lexer._token == null) {
+                    if (lexer._token == null) {
                         lexer.emit();
                     }
 
@@ -173,7 +173,9 @@ public class CSSTokenRecovery {
                 if (!ls.isBalanced()) {
                     return generateEOFRecover();
                 }
-                log.trace("lexer state is balanced - emitEOF");
+                if (Config.LOGGING_ENABLED && log.isTraceEnabled()) {
+                    log.trace("lexer state is balanced - emitEOF");
+                }
                 lexer.emitEOF();
                 ttype1 = lexer._token;
                 return ttype1;
@@ -209,7 +211,9 @@ public class CSSTokenRecovery {
             t.setText("}");
         }
 
-        log.debug("Recovering from EOF by {}", t.getText());
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Recovering from EOF by {}", t.getText());
+        }
         return t;
     }
 
@@ -219,8 +223,10 @@ public class CSSTokenRecovery {
      */
     private void consumeUntilBalanced(IntervalSet follow) {
 
-        log.debug("Lexer entered consumeUntilBalanced with {} and follow {}",
+        if (Config.LOGGING_ENABLED && log.isDebugEnabled()) {
+            log.debug("Lexer entered consumeUntilBalanced with {} and follow {}",
                 ls, follow);
+        }
 
         int c;
         do {
@@ -246,7 +252,9 @@ public class CSSTokenRecovery {
                 if (ls.quotOpen) ls.quotOpen = false;
                 else if (ls.aposOpen) ls.aposOpen = false;
             } else if (c == Token.EOF) {
-                log.info("Unexpected EOF during consumeUntilBalanced, EOF not consumed");
+                if (Config.LOGGING_ENABLED && log.isInfoEnabled()) {
+                    log.info("Unexpected EOF during consumeUntilBalanced, EOF not consumed");
+                }
                 return;
             }
 
@@ -254,10 +262,10 @@ public class CSSTokenRecovery {
             // log result
             if (log.isTraceEnabled())
                 log.trace("Lexer consumes '{}'({}) until balanced ({}).",
-                        new Object[]{
-                                Character.toString((char) c),
-                                Integer.toString(c),
-                                ls});
+                    new Object[]{
+                        Character.toString((char) c),
+                        Integer.toString(c),
+                        ls });
 
         } while (!(ls.isBalanced() && follow.contains(c)));
     }
